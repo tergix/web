@@ -4,35 +4,48 @@ import hmac
 import hashlib
 import psycopg2
 import telebot
+import logging
 from telebot.types import WebAppInfo,ReplyKeyboardMarkup,KeyboardButton
 from flask import Flask,request,render_template,jsonify,abort
+logging.basicConfig(level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
+logger=logging.getLogger(__name__)
 app=Flask(__name__)
 app.config['SECRET_KEY']=os.getenv('SECRET_KEY','a1b2c3d4e5f6g7h8')
 BOT_TOKEN=os.getenv('BOT_TOKEN','7473315933:AAHx8W5gbffy7ICYhZAgypOJV9Z8Ym-Va2A')
 bot=telebot.TeleBot(BOT_TOKEN)
 DATABASE_URL=os.getenv('DATABASE_URL','postgresql://casino_db_puaq_user:kyDkwkYOHnUrQXvildekqxPD2AiJMkUE@dpg-d067pb2li9vc73e38d70-a/casino_db_puaq')
 def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
+    try:
+        conn=psycopg2.connect(DATABASE_URL)
+        logger.info("Database connection established")
+        return conn
+    except Exception as e:
+        logger.error(f"Database connection failed: {e}")
+        raise
 def init_db():
-    conn=get_db_connection()
-    cursor=conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            user_id TEXT PRIMARY KEY,
-            username TEXT,
-            balance INTEGER DEFAULT 1000000,
-            total_won INTEGER DEFAULT 0,
-            total_lost INTEGER DEFAULT 0,
-            level INTEGER DEFAULT 1,
-            xp INTEGER DEFAULT 0,
-            status TEXT DEFAULT 'Новичок',
-            premium_expiry INTEGER DEFAULT 0,
-            last_bonus INTEGER
-        )
-    ''')
-    conn.commit()
-    conn.close()
-    print("Database initialized successfully")
+    try:
+        conn=get_db_connection()
+        cursor=conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                user_id TEXT PRIMARY KEY,
+                username TEXT,
+                balance INTEGER DEFAULT 1000000,
+                total_won INTEGER DEFAULT 0,
+                total_lost INTEGER DEFAULT 0,
+                level INTEGER DEFAULT 1,
+                xp INTEGER DEFAULT 0,
+                status TEXT DEFAULT 'Новичок',
+                premium_expiry INTEGER DEFAULT 0,
+                last_bonus INTEGER
+            )
+        ''')
+        conn.commit()
+        conn.close()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        raise
 init_db()
 def validate_init_data(init_data,bot_token):
     try:
@@ -42,7 +55,8 @@ def validate_init_data(init_data,bot_token):
         secret_key=hmac.new("WebAppData".encode(),bot_token.encode(),hashlib.sha256).digest()
         computed_hash=hmac.new(secret_key,data_check_string.encode(),hashlib.sha256).hexdigest()
         return computed_hash==received_hash
-    except Exception:
+    except Exception as e:
+        logger.error(f"Validation failed: {e}")
         return False
 def format_amount(amount):
     return f"{amount:,}".replace(","," ")
@@ -59,55 +73,67 @@ def get_main_menu():
 def start(message):
     user_id=str(message.from_user.id)
     username=message.from_user.username or message.from_user.first_name
-    conn=get_db_connection()
-    cursor=conn.cursor()
-    cursor.execute('SELECT user_id FROM users WHERE user_id = %s',(user_id,))
-    if not cursor.fetchone():
-        cursor.execute('''
-            INSERT INTO users (user_id,username,balance,total_won,level,xp,status)
-            VALUES (%s,%s,%s,%s,%s,%s,%s)
-        ''',(user_id,username,1000000,1000000,1,1000000,'Новичок'))
-        conn.commit()
-    conn.close()
-    bot.send_message(message.chat.id,"Добро пожаловать в Казино! Выберите действие:",reply_markup=get_main_menu())
+    try:
+        conn=get_db_connection()
+        cursor=conn.cursor()
+        cursor.execute('SELECT user_id FROM users WHERE user_id = %s',(user_id,))
+        if not cursor.fetchone():
+            cursor.execute('''
+                INSERT INTO users (user_id,username,balance,total_won,level,xp,status)
+                VALUES (%s,%s,%s,%s,%s,%s,%s)
+            ''',(user_id,username,1000000,1000000,1,1000000,'Новичок'))
+            conn.commit()
+        conn.close()
+        bot.send_message(message.chat.id,"Добро пожаловать в Казино! Выберите действие:",reply_markup=get_main_menu())
+    except Exception as e:
+        logger.error(f"Start command failed: {e}")
+        bot.send_message(message.chat.id,"Ошибка при запуске. Попробуйте позже.")
 @bot.message_handler(commands=['profile'])
 def profile(message):
     user_id=str(message.from_user.id)
-    conn=get_db_connection()
-    cursor=conn.cursor()
-    cursor.execute('SELECT username,balance,total_won,total_lost,level,xp,status,premium_expiry FROM users WHERE user_id = %s',(user_id,))
-    user=cursor.fetchone()
-    conn.close()
-    if user:
-        username,balance,total_won,total_lost,level,xp,status,premium_expiry=user
-        premium_status="💎 Премиум" if premium_expiry>time.time() else "🚫 Нет премиума"
-        response=f"📊 Профиль\nИмя: @{username}\nБаланс: {format_amount(balance)} рублей\nВыиграно: {format_amount(total_won)} рублей\nПроиграно: {format_amount(total_lost)} рублей\nУровень: {level} ({status})\nXP: {xp}/{level*1000}\nПремиум: {premium_status}"
-    else:
-        response="Профиль не найден!"
-    bot.send_message(message.chat.id,response,reply_markup=get_main_menu())
+    try:
+        conn=get_db_connection()
+        cursor=conn.cursor()
+        cursor.execute('SELECT username,balance,total_won,total_lost,level,xp,status,premium_expiry FROM users WHERE user_id = %s',(user_id,))
+        user=cursor.fetchone()
+        conn.close()
+        if user:
+            username,balance,total_won,total_lost,level,xp,status,premium_expiry=user
+            premium_status="💎 Премиум" if premium_expiry>time.time() else "🚫 Нет премиума"
+            response=f"📊 Профиль\nИмя: @{username}\nБаланс: {format_amount(balance)} рублей\nВыиграно: {format_amount(total_won)} рублей\nПроиграно: {format_amount(total_lost)} рублей\nУровень: {level} ({status})\nXP: {xp}/{level*1000}\nПремиум: {premium_status}"
+        else:
+            response="Профиль не найден!"
+        bot.send_message(message.chat.id,response,reply_markup=get_main_menu())
+    except Exception as e:
+        logger.error(f"Profile command failed: {e}")
+        bot.send_message(message.chat.id,"Ошибка при загрузке профиля. Попробуйте позже.")
 @bot.message_handler(commands=['bonus'])
 def bonus(message):
     user_id=str(message.from_user.id)
-    conn=get_db_connection()
-    cursor=conn.cursor()
-    cursor.execute('SELECT balance,last_bonus FROM users WHERE user_id = %s',(user_id,))
-    user=cursor.fetchone()
-    if not user:
-        conn.close()
-        bot.send_message(message.chat.id,"Профиль не найден!",reply_markup=get_main_menu())
-        return
-    balance,last_bonus_time=user
-    if last_bonus_time is None or time.time()-last_bonus_time>=86400:
-        bonus=1000
-        new_balance= balance + bonus
-        cursor.execute('UPDATE users SET balance=%s,last_bonus=%s,total_won=total_won+%s WHERE user_id=%s', (new_balance, time.time(), bonus, user_id))
-        conn.commit()
-        conn.close()
-        bot.send_message(message.chat.id,f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!", reply_markup=get_main_menu())
-    else:
-        time_left=int((last_bonus_time+86400-time.time())/3600)
-        conn.close()
-        bot.send_message(message.chat.id,f"Бонус доступен через {time_left} часов! ⏳",reply_markup=get_main_menu())
+    try:
+        conn=get_db_connection()
+        cursor=conn.cursor()
+        cursor.execute('SELECT balance,last_bonus FROM users WHERE user_id = %s',(user_id,))
+        user=cursor.fetchone()
+        if not user:
+            conn.close()
+            bot.send_message(message.chat.id,"Профиль не найден!",reply_markup=get_main_menu())
+            return
+        balance,last_bonus_time=user
+        if last_bonus_time is None or time.time()-last_bonus_time>=86400:
+            bonus=1000
+            new_balance=balance+bonus
+            cursor.execute('UPDATE users SET balance=%s,last_bonus=%s,total_won=total_won+%s WHERE user_id=%s',(new_balance,time.time(),bonus,user_id))
+            conn.commit()
+            conn.close()
+            bot.send_message(message.chat.id,f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!",reply_markup=get_main_menu())
+        else:
+            time_left=int((last_bonus_time+86400-time.time())/3600)
+            conn.close()
+            bot.send_message(message.chat.id,f"Бонус доступен через {time_left} часов! ⏳",reply_markup=get_main_menu())
+    except Exception as e:
+        logger.error(f"Bonus command failed: {e}")
+        bot.send_message(message.chat.id,"Ошибка при получении бонуса. Попробуйте позже.")
 @bot.message_handler(func=lambda message:message.text=="🎰 Слоты")
 def slots(message):
     bot.send_message(message.chat.id,"Игра в слоты! (Функционал в Web App)",reply_markup=get_main_menu())
@@ -118,68 +144,92 @@ def roulette(message):
 def index():
     init_data=request.args.get('tgWebAppData','')
     if not init_data or not validate_init_data(init_data,BOT_TOKEN):
+        logger.warning("Invalid tgWebAppData")
         abort(403)
     return render_template('index.html')
 @app.route('/profile')
 def profile_page():
     init_data=request.args.get('tgWebAppData','')
     if not init_data or not validate_init_data(init_data,BOT_TOKEN):
+        logger.warning("Invalid tgWebAppData")
         abort(403)
     user_id=init_data.split('&')[0].split('=')[1]
-    conn=get_db_connection()
-    cursor=conn.cursor()
-    cursor.execute('SELECT username,balance,level,status FROM users WHERE user_id = %s',(user_id,))
-    user=cursor.fetchone()
-    conn.close()
-    if user:
-        return render_template('profile.html',username=user[0],balance=format_amount(user[1]),level=user[2],status=user[3])
-    abort(404)
+    try:
+        conn=get_db_connection()
+        cursor=conn.cursor()
+        cursor.execute('SELECT username,balance,level,status FROM users WHERE user_id = %s',(user_id,))
+        user=cursor.fetchone()
+        conn.close()
+        if user:
+            return render_template('profile.html',username=user[0],balance=format_amount(user[1]),level=user[2],status=user[3])
+        abort(404)
+    except Exception as e:
+        logger.error(f"Profile page failed: {e}")
+        abort(500)
 @app.route('/slots')
 def slots_page():
     init_data=request.args.get('tgWebAppData','')
     if not init_data or not validate_init_data(init_data,BOT_TOKEN):
+        logger.warning("Invalid tgWebAppData")
         abort(403)
     return render_template('slots.html')
 @app.route('/roulette')
 def roulette_page():
     init_data=request.args.get('tgWebAppData','')
     if not init_data or not validate_init_data(init_data,BOT_TOKEN):
+        logger.warning("Invalid tgWebAppData")
         abort(403)
     return render_template('roulette.html')
 @app.route('/update_balance',methods=['POST'])
 def update_balance():
     init_data=request.args.get('tgWebAppData','')
     if not init_data or not validate_init_data(init_data,BOT_TOKEN):
+        logger.warning("Invalid tgWebAppData")
         abort(403)
     user_id=init_data.split('&')[0].split('=')[1]
     data=request.get_json()
     amount=data.get('amount',0)
-    conn=get_db_connection()
-    cursor=conn.cursor()
-    cursor.execute('SELECT balance FROM users WHERE user_id = %s',(user_id,))
-    user=cursor.fetchone()
-    if user:
-        new_balance=user[0]+amount
-        total_won=amount if amount>0 else 0
-        total_lost=-amount if amount<0 else 0
-        cursor.execute('''
-            UPDATE users SET balance=%s,total_won=total_won+%s,total_lost=total_lost+%s WHERE user_id=%s
-        ''',(new_balance,total_won,total_lost,user_id))
-        conn.commit()
+    try:
+        conn=get_db_connection()
+        cursor=conn.cursor()
+        cursor.execute('SELECT balance FROM users WHERE user_id = %s',(user_id,))
+        user=cursor.fetchone()
+        if user:
+            new_balance=user[0]+amount
+            total_won=amount if amount>0 else 0
+            total_lost=-amount if amount<0 else 0
+            cursor.execute('''
+                UPDATE users SET balance=%s,total_won=total_won+%s,total_lost=total_lost+%s WHERE user_id=%s
+            ''',(new_balance,total_won,total_lost,user_id))
+            conn.commit()
+            conn.close()
+            return jsonify({'balance':format_amount(new_balance)})
         conn.close()
-        return jsonify({'balance':format_amount(new_balance)})
-    conn.close()
-    abort(404)
+        abort(404)
+    except Exception as e:
+        logger.error(f"Update balance failed: {e}")
+        abort(500)
 @app.route('/webhook',methods=['POST'])
 def webhook():
     if request.headers.get('content-type')=='application/json':
-        json_string=request.get_data().decode('utf-8')
-        update=telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return '',200
+        try:
+            json_string=request.get_data().decode('utf-8')
+            update=telebot.types.Update.de_json(json_string)
+            bot.process_new_updates([update])
+            logger.info("Webhook processed successfully")
+            return '',200
+        except Exception as e:
+            logger.error(f"Webhook processing failed: {e}")
+            return '',500
+    logger.warning("Invalid webhook content-type")
     return '',403
 if __name__=='__main__':
     port=int(os.getenv('PORT',5000))
+    logger.info(f"Starting application on port {port}")
     bot.remove_webhook()
-    bot.set_webhook(url=f"https://casino-web.onrender.com/webhook")
+    try:
+        bot.set_webhook(url=f"https://casino-web.onrender.com/webhook")
+        logger.info("Webhook set successfully")
+    except Exception as e:
+        logger.error(f"Failed to set webhook: {e}")
     app.run(host="0.0.0.0",port=port)
