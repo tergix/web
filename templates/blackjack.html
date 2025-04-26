@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blackjack - Casino</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>♠️ Blackjack</h1>
+        <div class="nav">
+            <a href="/">🏠 Home</a>
+        </div>
+        <h2>Place Your Bet</h2>
+        <input type="number" id="bet" value="{{ bet }}" min="100">
+        <button onclick="adjustBet(-1000)">-1000</button>
+        <button onclick="adjustBet(1000)">+1000</button>
+        <button onclick="adjustBet(-100)">-100</button>
+        <button onclick="adjustBet(100)">+100</button>
+        <div id="game-result"></div>
+        <div id="error-message"></div>
+        <button onclick="playBlackjack('hit')">🃏 Hit</button>
+        <button onclick="playBlackjack('stand')">🛑 Stand</button>
+    </div>
+    <script src="/static/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            Telegram.WebApp.MainButton.setText('Старт');
+            Telegram.WebApp.MainButton.onClick(() => playBlackjack('start'));
+            Telegram.WebApp.MainButton.show();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Casino</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>👑 Admin Panel</h1>
+        <div class="nav">
+            <a href="/">🏠 Home</a>
+        </div>
+        <h2>Top Players</h2>
+        <ul>
+            {% for player in players %}
+            <li>@{{ player[1] }} (ID: {{ player[0] }})</li>
+            {% endfor %}
+        </ul>
+        <h2>Manage User</h2>
+        <input type="text" id="target_id" placeholder="User ID">
+        <input type="number" id="amount" placeholder="Amount/Minutes">
+        <button onclick="adminAction('give', document.getElementById('target_id').value)">💰 Give Money</button>
+        <button onclick="adminAction('reset', document.getElementById('target_id').value)">🔄 Reset Stats</button>
+        <button onclick="adminAction('mute', document.getElementById('target_id').value)">🤐 Mute</button>
+        <button onclick="adminAction('unmute', document.getElementById('target_id').value)">🔊 Unmute</button>
+        <button onclick="adminAction('block', document.getElementById('target_id').value)">🚫 Block</button>
+        <button onclick="adminAction('unblock', document.getElementById('target_id').value)">🔓 Unblock</button>
+        <button onclick="adminAction('premium', document.getElementById('target_id').value)">💎 Premium</button>
+        <div id="game-result"></div>
+        <div id="error-message"></div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

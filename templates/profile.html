@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile - Casino</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Profile</h1>
+        <div class="nav">
+            <a href="/">🏠 Home</a>
+        </div>
+        <p><strong>Имя:</strong> @{{ username }}</p>
+        <p><strong>Баланс:</strong> {{ balance }} рублей</p>
+        <p><strong>Выиграно:</strong> {{ total_won }} рублей</p>
+        <p><strong>Проиграно:</strong> {{ total_lost }} рублей</p>
+        <p><strong>Уровень:</strong> {{ level }} ({{ status }})</p>
+        <p><strong>XP:</strong> {{ xp }}/{{ level * 1000 }}</p>
+        <p><strong>Премиум:</strong> {{ premium_status }}</p>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

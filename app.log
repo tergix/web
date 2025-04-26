@@ -1,0 +1,144 @@
+2025-04-26 00:51:35,678 - INFO - Database initialized successfully
+2025-04-26 00:51:35,679 - INFO - Data loaded successfully
+2025-04-26 00:51:35,703 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 00:51:35,703 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 00:51:35,704 - INFO -  * Restarting with stat
+2025-04-26 00:51:35,971 - INFO - Database initialized successfully
+2025-04-26 00:51:35,972 - INFO - Data loaded successfully
+2025-04-26 00:51:35,985 - WARNING -  * Debugger is active!
+2025-04-26 00:51:35,988 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 00:52:06,221 - INFO - Database initialized successfully
+2025-04-26 00:52:06,223 - INFO - Data loaded successfully
+2025-04-26 00:52:06,244 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 00:52:06,245 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 00:52:06,245 - INFO -  * Restarting with stat
+2025-04-26 00:52:06,517 - INFO - Database initialized successfully
+2025-04-26 00:52:06,517 - INFO - Data loaded successfully
+2025-04-26 00:52:06,531 - WARNING -  * Debugger is active!
+2025-04-26 00:52:06,534 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 00:52:23,063 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:23] "[32mGET / HTTP/1.1[0m" 302 -
+2025-04-26 00:52:23,071 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:23] "GET /login HTTP/1.1" 200 -
+2025-04-26 00:52:23,120 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:23] "GET /static/styles.css HTTP/1.1" 200 -
+2025-04-26 00:52:23,141 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-04-26 00:52:36,301 - INFO - Data saved successfully
+2025-04-26 00:52:36,302 - INFO - New user саит  registered with ID 346209007
+2025-04-26 00:52:36,304 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:36] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-04-26 00:52:36,311 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:36] "GET / HTTP/1.1" 200 -
+2025-04-26 00:52:36,340 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:36] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:52:36,341 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:36] "GET /static/script.js HTTP/1.1" 200 -
+2025-04-26 00:52:38,931 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:38] "GET /slots HTTP/1.1" 200 -
+2025-04-26 00:52:38,956 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:38] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:52:38,956 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:38] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:52:49,534 - INFO - Slots played by 346209007: Bet=1000, Result=['🐱', '🐭', '🐰'], Win=0
+2025-04-26 00:52:49,536 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:49] "POST /slots HTTP/1.1" 200 -
+2025-04-26 00:52:58,153 - INFO - User 346209007 logged out
+2025-04-26 00:52:58,155 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:58] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-04-26 00:52:58,158 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:58] "GET /login HTTP/1.1" 200 -
+2025-04-26 00:52:58,181 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:58] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:52:58,572 - ERROR - XP update error for 346209007: database is locked
+2025-04-26 00:52:58,590 - INFO - Slots played by 346209007: Bet=1000, Result=['🐱', '🐰', '🐱'], Win=2000
+2025-04-26 00:52:58,593 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:58] "POST /slots HTTP/1.1" 200 -
+2025-04-26 00:52:58,621 - INFO - Slots played by 346209007: Bet=1000, Result=['🐶', '🐭', '🐱'], Win=0
+2025-04-26 00:52:58,623 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:58] "POST /slots HTTP/1.1" 200 -
+2025-04-26 00:52:59,440 - INFO - User саит  logged in
+2025-04-26 00:52:59,441 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:59] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-04-26 00:52:59,447 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:59] "GET / HTTP/1.1" 200 -
+2025-04-26 00:52:59,474 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:59] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:52:59,475 - INFO - 127.0.0.1 - - [26/Apr/2025 00:52:59] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:00,803 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:00] "GET /rocket HTTP/1.1" 200 -
+2025-04-26 00:53:00,827 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:00] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:04,773 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:04] "GET /roulette HTTP/1.1" 200 -
+2025-04-26 00:53:04,795 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:04] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:04,798 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:04] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:08,006 - INFO - Roulette played by 346209007: Bet=1000, Type=red, Result=8 ⚫, Win=0
+2025-04-26 00:53:08,007 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:08] "POST /roulette HTTP/1.1" 200 -
+2025-04-26 00:53:09,716 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:09] "GET / HTTP/1.1" 200 -
+2025-04-26 00:53:09,742 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:09] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:09,742 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:09] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:11,056 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:11] "GET /dice HTTP/1.1" 200 -
+2025-04-26 00:53:11,082 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:11] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:11,085 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:11] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:12,849 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:12] "GET / HTTP/1.1" 200 -
+2025-04-26 00:53:12,876 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:12] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:12,879 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:12] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:13,979 - INFO - Bonus claimed by 346209007: Amount=4437
+2025-04-26 00:53:13,981 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:13] "POST /bonus HTTP/1.1" 200 -
+2025-04-26 00:53:16,529 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:16] "GET /roulette HTTP/1.1" 200 -
+2025-04-26 00:53:16,558 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:16] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:16,560 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:16] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:18,791 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:18] "GET / HTTP/1.1" 200 -
+2025-04-26 00:53:18,816 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:18] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:53:18,819 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:18] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+2025-04-26 00:53:19,873 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:19] "GET /rocket HTTP/1.1" 200 -
+2025-04-26 00:53:19,900 - INFO - 127.0.0.1 - - [26/Apr/2025 00:53:19] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 00:54:00,593 - INFO - 127.0.0.1 - - [26/Apr/2025 00:54:00] "POST /bonus HTTP/1.1" 200 -
+2025-04-26 00:54:02,897 - INFO - 127.0.0.1 - - [26/Apr/2025 00:54:02] "GET /rocket HTTP/1.1" 200 -
+2025-04-26 00:54:02,924 - INFO - 127.0.0.1 - - [26/Apr/2025 00:54:02] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2025-04-26 01:12:53,109 - INFO - Database initialized successfully
+2025-04-26 01:12:53,110 - INFO - Data loaded successfully
+2025-04-26 01:12:53,129 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 01:12:53,129 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 01:12:53,130 - INFO -  * Restarting with stat
+2025-04-26 01:12:54,201 - INFO - Database initialized successfully
+2025-04-26 01:12:54,202 - INFO - Data loaded successfully
+2025-04-26 01:12:54,213 - WARNING -  * Debugger is active!
+2025-04-26 01:12:54,216 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 01:23:08,902 - INFO - Database initialized successfully
+2025-04-26 01:23:08,903 - INFO - Data loaded successfully
+2025-04-26 01:23:08,922 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 01:23:08,922 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 01:23:08,923 - INFO -  * Restarting with stat
+2025-04-26 01:23:10,031 - INFO - Database initialized successfully
+2025-04-26 01:23:10,032 - INFO - Data loaded successfully
+2025-04-26 01:23:10,047 - WARNING -  * Debugger is active!
+2025-04-26 01:23:10,050 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 01:23:32,201 - INFO - 127.0.0.1 - - [26/Apr/2025 01:23:32] "[31m[1mGET / HTTP/1.1[0m" 403 -
+2025-04-26 01:23:32,228 - INFO - 127.0.0.1 - - [26/Apr/2025 01:23:32] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-04-26 01:34:02,498 - INFO - Database initialized successfully
+2025-04-26 01:34:02,499 - INFO - Data loaded successfully
+2025-04-26 01:34:02,519 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 01:34:02,519 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 01:34:02,520 - INFO -  * Restarting with stat
+2025-04-26 01:34:03,584 - INFO - Database initialized successfully
+2025-04-26 01:34:03,585 - INFO - Data loaded successfully
+2025-04-26 01:34:03,596 - WARNING -  * Debugger is active!
+2025-04-26 01:34:03,599 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 01:35:35,649 - INFO - Database initialized successfully
+2025-04-26 01:35:35,650 - INFO - Data loaded successfully
+2025-04-26 01:35:35,668 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 01:35:35,668 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 01:35:35,669 - INFO -  * Restarting with stat
+2025-04-26 01:35:36,788 - INFO - Database initialized successfully
+2025-04-26 01:35:36,789 - INFO - Data loaded successfully
+2025-04-26 01:35:36,801 - WARNING -  * Debugger is active!
+2025-04-26 01:35:36,803 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 01:36:24,971 - INFO - 127.0.0.1 - - [26/Apr/2025 01:36:24] "[31m[1mGET / HTTP/1.1[0m" 403 -
+2025-04-26 01:37:44,403 - INFO - 127.0.0.1 - - [26/Apr/2025 01:37:44] "[31m[1mGET / HTTP/1.1[0m" 403 -
+2025-04-26 01:40:19,328 - INFO -  * Detected change in 'C:\\Users\\saitg\\PycharmProjects\\casino_web_app\\bot.py', reloading
+2025-04-26 01:40:19,384 - INFO -  * Restarting with stat
+2025-04-26 01:40:19,882 - INFO -  * Detected change in 'C:\\Users\\saitg\\PycharmProjects\\casino_web_app\\bot.py', reloading
+2025-04-26 01:40:19,953 - INFO -  * Restarting with stat
+2025-04-26 01:40:20,570 - INFO - Database initialized successfully
+2025-04-26 01:40:20,571 - INFO - Data loaded successfully
+2025-04-26 01:40:20,583 - WARNING -  * Debugger is active!
+2025-04-26 01:40:20,586 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 01:40:21,079 - INFO - Database initialized successfully
+2025-04-26 01:40:21,080 - INFO - Data loaded successfully
+2025-04-26 01:40:21,091 - WARNING -  * Debugger is active!
+2025-04-26 01:40:21,094 - INFO -  * Debugger PIN: 135-503-871
+2025-04-26 01:41:54,214 - INFO - Database initialized successfully
+2025-04-26 01:41:54,215 - INFO - Data loaded successfully
+2025-04-26 01:41:54,236 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-26 01:41:54,236 - INFO - [33mPress CTRL+C to quit[0m
+2025-04-26 01:41:54,237 - INFO -  * Restarting with stat
+2025-04-26 01:41:55,328 - INFO - Database initialized successfully
+2025-04-26 01:41:55,328 - INFO - Data loaded successfully
+2025-04-26 01:41:55,340 - WARNING -  * Debugger is active!
+2025-04-26 01:41:55,343 - INFO -  * Debugger PIN: 135-503-871

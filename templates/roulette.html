@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Roulette - Casino</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 Roulette</h1>
+        <div class="nav">
+            <a href="/">🏠 Home</a>
+        </div>
+        <h2>Place Your Bet</h2>
+        <input type="number" id="bet" value="{{ bet }}" min="100">
+        <button onclick="adjustBet(-1000)">-1000</button>
+        <button onclick="adjustBet(1000)">+1000</button>
+        <button onclick="adjustBet(-100)">-100</button>
+        <button onclick="adjustBet(100)">+100</button>
+        <h2>Bet Type</h2>
+        <button onclick="playRoulette('red')">🔴 Red</button>
+        <button onclick="playRoulette('black')">⚫ Black</button>
+        <button onclick="playRoulette('green')">🟢 Green</button>
+        <button onclick="playRoulette('1-12')">1-12</button>
+        <button onclick="playRoulette('13-24')">13-24</button>
+        <button onclick="playRoulette('25-36')">25-36</button>
+        <button onclick="playRoulette('even')">Even</button>
+        <button onclick="playRoulette('odd')">Odd</button>
+        <div id="game-result"></div>
+        <div id="error-message"></div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
