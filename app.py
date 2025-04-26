@@ -1,3 +1,4 @@
+
 import os
 import time
 import hmac
@@ -215,7 +216,7 @@ def webhook():
         json_string = request.get_data().decode('utf-8')
         update = telebot.types.Update.de_json(json_string)
         bot.process_new_updates([update])
-        return ''
+        return '', 200
     return '', 403
 
 if __name__ == '__main__':
