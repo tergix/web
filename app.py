@@ -99,11 +99,11 @@ def bonus(message):
     balance,last_bonus_time=user
     if last_bonus_time is None or time.time()-last_bonus_time>=86400:
         bonus=1000
-        new_balance=balance+bonus
-        cursor.execute('UPDATE users SET balance=%s,last_bonus=%s,total_won=total_won+%s WHERE user_id=%s',(new_balance,time.time(),bonus,user_id))
+        new_balance= balance + bonus
+        cursor.execute('UPDATE users SET balance=%s,last_bonus=%s,total_won=total_won+%s WHERE user_id=%s', (new_balance, time.time(), bonus, user_id))
         conn.commit()
         conn.close()
-        bot.send_message(message.chat.id,f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!",reply_markup=get_main_menu())
+        bot.send_message(message.chat.id,f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!", reply_markup=get_main_menu())
     else:
         time_left=int((last_bonus_time+86400-time.time())/3600)
         conn.close()
@@ -179,6 +179,7 @@ def webhook():
         return '',200
     return '',403
 if __name__=='__main__':
+    port=int(os.getenv('PORT',5000))
     bot.remove_webhook()
-    bot.set_webhook(url="https://casino-web.onrender.com/webhook")
-    app.run(host="0.0.0.0",port=int(os.getenv('PORT',5000)))
+    bot.set_webhook(url=f"https://casino-web.onrender.com/webhook")
+    app.run(host="0.0.0.0",port=port)
