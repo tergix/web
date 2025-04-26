@@ -28,7 +28,7 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///bot_data.db')
 if DATABASE_URL.startswith('postgres://'):
     import psycopg2
     def get_db_connection():
-        return psycopg2.connect(DATABASE_URL)
+        return psycopg2.connect(DATABASE_URL.replace('postgres://', 'postgresql://'))
 else:
     def get_db_connection():
         return sqlite3.connect(DATABASE_URL.replace('sqlite:///', ''))
@@ -743,3 +743,5 @@ def end_blackjack_game(user_id, won, result_text):
 if __name__ == '__main__':
     init_db()
     load_data()
+    port = int(os.getenv('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)

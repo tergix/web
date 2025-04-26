@@ -13,7 +13,7 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///bot_data.db')
 if DATABASE_URL.startswith('postgres://'):
     import psycopg2
     def get_db_connection():
-        return psycopg2.connect(DATABASE_URL)
+        return psycopg2.connect(DATABASE_URL.replace('postgres://', 'postgresql://'))
 else:
     def get_db_connection():
         return sqlite3.connect(DATABASE_URL.replace('sqlite:///', ''))
@@ -23,7 +23,7 @@ def format_amount(amount):
 
 def get_main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    web_app_button = KeyboardButton("🎰 Play Casino Web", web_app=WebAppInfo(url="https://your-app-name.herokuapp.com"))  # Update after deployment
+    web_app_button = KeyboardButton("🎰 Play Casino Web", web_app=WebAppInfo(url="https://your-app-name.onrender.com"))  # Update after deployment
     slots_button = KeyboardButton("🎰 Слоты")
     roulette_button = KeyboardButton("🎲 Рулетка")
     profile_button = KeyboardButton("📊 Профиль")
