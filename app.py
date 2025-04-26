@@ -1,3 +1,4 @@
+
 import os
 import time
 import hmac
@@ -19,7 +20,7 @@ DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///bot_data.db')
 if DATABASE_URL.startswith('postgres://'):
     import psycopg2
     def get_db_connection():
-          return psycopg2.connect(DATABASE_URL.replace('postgres://', 'postgresql://'))
+        return psycopg2.connect(DATABASE_URL.replace('postgres://', 'postgresql://'))
 else:
     def get_db_connection():
         return sqlite3.connect(DATABASE_URL.replace('sqlite:///', ''))
@@ -63,7 +64,7 @@ def format_amount(amount):
 
 def get_main_menu():
     markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    web_app_button = KeyboardButton("🎰 Play Casino Web", web_app=WebAppInfo(url="https://casino-web.onrender.com"))  # Replace with your Render URL
+    web_app_button = KeyboardButton("🎰 Play Casino Web", web_app=WebAppInfo(url="https://casino-web.onrender.com"))  # Replace with your actual Render URL
     slots_button = KeyboardButton("🎰 Слоты")
     roulette_button = KeyboardButton("🎲 Рулетка")
     profile_button = KeyboardButton("📊 Профиль")
@@ -129,7 +130,7 @@ def bonus(message):
         bonus = 1000
         new_balance = balance + bonus
         cursor.execute('UPDATE users SET balance = ?, last_bonus = ?, total_won = total_won + ? WHERE user_id = ?',
-                        (new_balance, time.time(), bonus, user_id))
+                       (new_balance, time.time(), bonus, user_id))
         conn.commit()
         conn.close()
         bot.send_message(message.chat.id, f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!", reply_markup=get_main_menu())
@@ -220,5 +221,5 @@ def webhook():
 
 if __name__ == '__main__':
     bot.remove_webhook()
-    bot.set_webhook(url="https://casino-web.onrender.com/webhook")  # Replace with your Render URL
+    bot.set_webhook(url="https://casino-web.onrender.com/webhook")  # Replace with your actual Render URL
     app.run(host="0.0.0.0", port=int(os.getenv('PORT', 5000)))
