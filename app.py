@@ -4,7 +4,7 @@ import hmac
 import hashlib
 import sqlite3
 import telebot
-from telebot.types import WebAppInfo, ReplyoooooKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from telebot.types import WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
 from flask import Flask, request, render_template, jsonify, abort
 
 app = Flask(__name__)
