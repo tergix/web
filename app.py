@@ -209,8 +209,11 @@ def update_balance():
     except Exception as e:
         logger.error(f"Update balance failed: {e}")
         abort(500)
-@app.route('/webhook',methods=['POST'])
+@app.route('/webhook',methods=['POST','GET'])
 def webhook():
+    if request.method=='GET':
+        logger.info("GET request received on /webhook")
+        return "Webhook endpoint: Use POST for Telegram updates",200
     if request.headers.get('content-type')=='application/json':
         try:
             json_string=request.get_data().decode('utf-8')
