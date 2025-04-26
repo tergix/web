@@ -2,7 +2,7 @@ import os
 import time
 import hmac
 import hashlib
-import sqlite3
+import psycopg2
 import telebot
 from telebot.types import WebAppInfo,ReplyKeyboardMarkup,KeyboardButton
 from flask import Flask,request,render_template,jsonify,abort
@@ -10,14 +10,9 @@ app=Flask(__name__)
 app.config['SECRET_KEY']=os.getenv('SECRET_KEY','a1b2c3d4e5f6g7h8')
 BOT_TOKEN=os.getenv('BOT_TOKEN','7473315933:AAHx8W5gbffy7ICYhZAgypOJV9Z8Ym-Va2A')
 bot=telebot.TeleBot(BOT_TOKEN)
-DATABASE_URL=os.getenv('DATABASE_URL','sqlite:///bot_data.db')
-if DATABASE_URL.startswith('postgres://'):
-    import psycopg2
-    def get_db_connection():
-        return psycopg2.connect(DATABASE_URL.replace('postgres://','postgresql://'))
-else:
-    def get_db_connection():
-        return sqlite3.connect(DATABASE_URL.replace('sqlite:///',''))
+DATABASE_URL=os.getenv('DATABASE_URL','postgresql://casino_db_puaq_user:kyDkwkYOHnUrQXvildekqxPD2AiJMkUE@dpg-d067pb2li9vc73e38d70-a/casino_db_puaq')
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
 def init_db():
     conn=get_db_connection()
     cursor=conn.cursor()
@@ -66,11 +61,11 @@ def start(message):
     username=message.from_user.username or message.from_user.first_name
     conn=get_db_connection()
     cursor=conn.cursor()
-    cursor.execute('SELECT user_id FROM users WHERE user_id = ?',(user_id,))
+    cursor.execute('SELECT user_id FROM users WHERE user_id = %s',(user_id,))
     if not cursor.fetchone():
         cursor.execute('''
             INSERT INTO users (user_id,username,balance,total_won,level,xp,status)
-            VALUES (?,?,?,?,?,?,?)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
         ''',(user_id,username,1000000,1000000,1,1000000,'Новичок'))
         conn.commit()
     conn.close()
@@ -80,7 +75,7 @@ def profile(message):
     user_id=str(message.from_user.id)
     conn=get_db_connection()
     cursor=conn.cursor()
-    cursor.execute('SELECT username,balance,total_won,total_lost,level,xp,status,premium_expiry FROM users WHERE user_id = ?',(user_id,))
+    cursor.execute('SELECT username,balance,total_won,total_lost,level,xp,status,premium_expiry FROM users WHERE user_id = %s',(user_id,))
     user=cursor.fetchone()
     conn.close()
     if user:
@@ -95,7 +90,7 @@ def bonus(message):
     user_id=str(message.from_user.id)
     conn=get_db_connection()
     cursor=conn.cursor()
-    cursor.execute('SELECT balance,last_bonus FROM users WHERE user_id = ?',(user_id,))
+    cursor.execute('SELECT balance,last_bonus FROM users WHERE user_id = %s',(user_id,))
     user=cursor.fetchone()
     if not user:
         conn.close()
@@ -105,7 +100,7 @@ def bonus(message):
     if last_bonus_time is None or time.time()-last_bonus_time>=86400:
         bonus=1000
         new_balance=balance+bonus
-        cursor.execute('UPDATE users SET balance=?,last_bonus=?,total_won=total_won+? WHERE user_id=?',(new_balance,time.time(),bonus,user_id))
+        cursor.execute('UPDATE users SET balance=%s,last_bonus=%s,total_won=total_won+%s WHERE user_id=%s',(new_balance,time.time(),bonus,user_id))
         conn.commit()
         conn.close()
         bot.send_message(message.chat.id,f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!",reply_markup=get_main_menu())
@@ -133,7 +128,7 @@ def profile_page():
     user_id=init_data.split('&')[0].split('=')[1]
     conn=get_db_connection()
     cursor=conn.cursor()
-    cursor.execute('SELECT username,balance,level,status FROM users WHERE user_id = ?',(user_id,))
+    cursor.execute('SELECT username,balance,level,status FROM users WHERE user_id = %s',(user_id,))
     user=cursor.fetchone()
     conn.close()
     if user:
@@ -161,14 +156,14 @@ def update_balance():
     amount=data.get('amount',0)
     conn=get_db_connection()
     cursor=conn.cursor()
-    cursor.execute('SELECT balance FROM users WHERE user_id = ?',(user_id,))
+    cursor.execute('SELECT balance FROM users WHERE user_id = %s',(user_id,))
     user=cursor.fetchone()
     if user:
         new_balance=user[0]+amount
         total_won=amount if amount>0 else 0
         total_lost=-amount if amount<0 else 0
         cursor.execute('''
-            UPDATE users SET balance=?,total_won=total_won+?,total_lost=total_lost+? WHERE user_id=?
+            UPDATE users SET balance=%s,total_won=total_won+%s,total_lost=total_lost+%s WHERE user_id=%s
         ''',(new_balance,total_won,total_lost,user_id))
         conn.commit()
         conn.close()
