@@ -1,19 +1,29 @@
 import os
-import time
+import telebot
+from flask import Flask, request, render_template, abort
+import psycopg2
+import logging
 import hmac
 import hashlib
-import psycopg2
-import telebot
-import logging
-from telebot import types
-from flask import Flask, request, render_template, jsonify, abort
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+import json
+from datetime import datetime, timedelta
+
+# Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'a1b2c3d4e5f6g7h8')
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Environment variables
 BOT_TOKEN = os.getenv('BOT_TOKEN', '7473315933:AAHx8W5gbffy7ICYhZAgypOJV9Z8Ym-Va2A')
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://casino_db_puaq_user:kyDkwkYOHnUrQXvildekqxPD2AiJMkUE@dpg-d067pb2li9vc73e38d70-a.oregon-postgres.render.com/casino_db_puaq?sslmode=require')
+SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key')  # Generate in Render
+
+# Initialize Telegram bot
 bot = telebot.TeleBot(BOT_TOKEN)
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://casino_db_puaq_user:kyDkwkYOHnUrQXvildekqxPD2AiJMkUE@dpg-d067pb2li9vc73e38d70-a/casino_db_puaq')
+
+# Database connection
 def get_db_connection():
     try:
         conn = psycopg2.connect(DATABASE_URL)
@@ -22,213 +32,169 @@ def get_db_connection():
     except Exception as e:
         logger.error(f"Database connection failed: {e}")
         raise
+
+# Initialize database
 def init_db():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                user_id TEXT PRIMARY KEY,
+                user_id BIGINT PRIMARY KEY,
                 username TEXT,
-                balance INTEGER DEFAULT 1000000,
-                total_won INTEGER DEFAULT 0,
-                total_lost INTEGER DEFAULT 0,
-                level INTEGER DEFAULT 1,
-                xp INTEGER DEFAULT 0,
-                status TEXT DEFAULT 'Новичок',
-                premium_expiry INTEGER DEFAULT 0,
-                last_bonus INTEGER
+                balance INTEGER DEFAULT 0,
+                last_bonus TIMESTAMP
             )
         ''')
         conn.commit()
-        conn.close()
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
         raise
-init_db()
+    finally:
+        cursor.close()
+        conn.close()
+
+# Validate Telegram Web App initData
 def validate_init_data(init_data, bot_token):
     try:
-        data = {k: v for k, v in (pair.split('=') for pair in init_data.split('&'))}
-        received_hash = data.pop('hash', '')
-        data_check_string = '\n'.join(f"{k}={v}" for k, v in sorted(data.items()))
-        secret_key = hmac.new("WebAppData".encode(), bot_token.encode(), hashlib.sha256).digest()
+        parsed_data = dict(param.split('=') for param in init_data.split('&'))
+        check_hash = parsed_data.pop('hash', None)
+        data_check_string = '\n'.join(f'{k}={v}' for k, v in sorted(parsed_data.items()))
+        secret_key = hmac.new(b'WebAppData', bot_token.encode(), hashlib.sha256).digest()
         computed_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
-        return computed_hash == received_hash
+        return computed_hash == check_hash
     except Exception as e:
         logger.error(f"Validation failed: {e}")
         return False
-def format_amount(amount):
-    return f"{amount:,}".replace(",", " ")
-def get_main_menu():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    web_app_button = types.KeyboardButton("🎰 Play Casino Web", web_app=types.WebAppInfo(url="https://casino-web.onrender.com"))
-    slots_button = types.KeyboardButton("🎰 Слоты")
-    roulette_button = types.KeyboardButton("🎲 Рулетка")
-    profile_button = types.KeyboardButton("📊 Профиль")
-    bonus_button = types.KeyboardButton("🎁 Бонус")
-    markup.add(web_app_button, slots_button, roulette_button, profile_button, bonus_button)
-    return markup
+
+# Initialize database on startup
+try:
+    init_db()
+except Exception as e:
+    logger.error(f"Failed to initialize database on startup: {e}")
+    raise
+
+# Telegram bot handlers
 @bot.message_handler(commands=['start'])
-def start(message):
-    user_id = str(message.from_user.id)
-    username = message.from_user.username or message.from_user.first_name
+def send_welcome(message):
+    user_id = message.from_user.id
+    username = message.from_user.username or 'Unknown'
+    logger.info(f"Processing /start for user_id: {user_id}, username: {username}")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT user_id FROM users WHERE user_id = %s', (user_id,))
-        if not cursor.fetchone():
-            cursor.execute('''
-                INSERT INTO users (user_id, username, balance, total_won, level, xp, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ''', (user_id, username, 1000000, 1000000, 1, 1000000, 'Новичок'))
-            conn.commit()
-        conn.close()
-        bot.send_message(message.chat.id, "Добро пожаловать в Казино! Выберите действие:", reply_markup=get_main_menu())
+        cursor.execute(
+            'INSERT INTO users (user_id, username) VALUES (%s, %s) ON CONFLICT (user_id) DO NOTHING',
+            (user_id, username)
+        )
+        conn.commit()
+        bot.reply_to(message, "Welcome to Casino Web! Use /profile to view your profile or /bonus to claim a daily bonus.")
+        logger.info(f"User {user_id} registered successfully")
     except Exception as e:
-        logger.error(f"Start command failed: {e}")
-        bot.send_message(message.chat.id, "Ошибка при запуске. Попробуйте позже.")
+        logger.error(f"Error in /start for user {user_id}: {e}")
+        bot.reply_to(message, "An error occurred. Please try again later.")
+    finally:
+        cursor.close()
+        conn.close()
+
 @bot.message_handler(commands=['profile'])
 def profile(message):
-    user_id = str(message.from_user.id)
+    user_id = message.from_user.id
+    logger.info(f"Processing /profile for user_id: {user_id}")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT username, balance, total_won, total_lost, level, xp, status, premium_expiry FROM users WHERE user_id = %s', (user_id,))
+        cursor.execute('SELECT username, balance FROM users WHERE user_id = %s', (user_id,))
         user = cursor.fetchone()
-        conn.close()
         if user:
-            username, balance, total_won, total_lost, level, xp, status, premium_expiry = user
-            premium_status = "💎 Премиум" if premium_expiry > time.time() else "🚫 Нет премиума"
-            response = f"📊 Профиль\nИмя: @{username}\nБаланс: {format_amount(balance)} рублей\nВыиграно: {format_amount(total_won)} рублей\nПроиграно: {format_amount(total_lost)} рублей\nУровень: {level} ({status})\nXP: {xp}/{level*1000}\nПремиум: {premium_status}"
+            bot.reply_to(message, f"Profile:\nUsername: {user[0]}\nBalance: {user[1]} coins")
+            logger.info(f"Profile retrieved for user {user_id}")
         else:
-            response = "Профиль не найден!"
-        bot.send_message(message.chat.id, response, reply_markup=get_main_menu())
+            bot.reply_to(message, "Profile not found. Use /start to register.")
+            logger.info(f"No profile found for user {user_id}")
     except Exception as e:
-        logger.error(f"Profile command failed: {e}")
-        bot.send_message(message.chat.id, "Ошибка при загрузке профиля. Попробуйте позже.")
+        logger.error(f"Error in /profile for user {user_id}: {e}")
+        bot.reply_to(message, "An error occurred. Please try again later.")
+    finally:
+        cursor.close()
+        conn.close()
+
 @bot.message_handler(commands=['bonus'])
 def bonus(message):
-    user_id = str(message.from_user.id)
+    user_id = message.from_user.id
+    logger.info(f"Processing /bonus for user_id: {user_id}")
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT balance, last_bonus FROM users WHERE user_id = %s', (user_id,))
-        user = cursor.fetchone()
-        if not user:
-            conn.close()
-            bot.send_message(message.chat.id, "Профиль не найден!", reply_markup=get_main_menu())
-            return
-        balance, last_bonus_time = user
-        if last_bonus_time is None or time.time() - last_bonus_time >= 86400:
-            bonus = 1000
-            new_balance = balance + bonus
-            cursor.execute('UPDATE users SET balance=%s, last_bonus=%s, total_won=total_won+%s WHERE user_id=%s', (new_balance, time.time(), bonus, user_id))
-            conn.commit()
-            conn.close()
-            bot.send_message(message.chat.id, f"🎁 Вы получили бонус: {format_amount(bonus)} рублей!", reply_markup=get_main_menu())
+        cursor.execute('SELECT last_bonus FROM users WHERE user_id = %s', (user_id,))
+        last_bonus = cursor.fetchone()
+        if last_bonus and last_bonus[0] and (datetime.now() - last_bonus[0]).total_seconds() < 86400:
+            bot.reply_to(message, "You can claim a bonus once every 24 hours. Try again later.")
+            logger.info(f"Bonus denied for user {user_id}: too soon")
         else:
-            time_left = int((last_bonus_time + 86400 - time.time()) / 3600)
-            conn.close()
-            bot.send_message(message.chat.id, f"Бонус доступен через {time_left} часов! ⏳", reply_markup=get_main_menu())
+            cursor.execute(
+                'UPDATE users SET balance = balance + 100, last_bonus = %s WHERE user_id = %s',
+                (datetime.now(), user_id)
+            )
+            conn.commit()
+            bot.reply_to(message, "You claimed a 100-coin bonus!")
+            logger.info(f"Bonus claimed for user {user_id}")
     except Exception as e:
-        logger.error(f"Bonus command failed: {e}")
-        bot.send_message(message.chat.id, "Ошибка при получении бонуса. Попробуйте позже.")
-@bot.message_handler(func=lambda message: message.text == "🎰 Слоты")
-def slots(message):
-    bot.send_message(message.chat.id, "Игра в слоты! (Функционал в Web App)", reply_markup=get_main_menu())
-@bot.message_handler(func=lambda message: message.text == "🎲 Рулетка")
-def roulette(message):
-    bot.send_message(message.chat.id, "Игра в рулетку! (Функционал в Web App)", reply_markup=get_main_menu())
+        logger.error(f"Error in /bonus for user {user_id}: {e}")
+        bot.reply_to(message, "An error occurred. Please try again later.")
+    finally:
+        cursor.close()
+        conn.close()
+
+# Webhook endpoint
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        try:
+            json_data = request.get_json()
+            logger.info(f"Received webhook update: {json_data}")
+            update = telebot.types.Update.de_json(json_data)
+            if update:
+                bot.process_new_updates([update])
+                logger.info("Webhook processed successfully")
+                return '', 200
+            else:
+                logger.warning("Invalid update received")
+                return '', 400
+        except Exception as e:
+            logger.error(f"Webhook processing failed: {e}")
+            return '', 500
+    logger.warning(f"Invalid content-type: {request.headers.get('content-type')}")
+    return '', 403
+
+# Web App endpoint
 @app.route('/')
 def index():
     init_data = request.args.get('tgWebAppData', '')
     if not init_data or not validate_init_data(init_data, BOT_TOKEN):
         logger.warning("Invalid tgWebAppData")
         abort(403)
-    return render_template('index.html')
-@app.route('/profile')
-def profile_page():
-    init_data = request.args.get('tgWebAppData', '')
-    if not init_data or not validate_init_data(init_data, BOT_TOKEN):
-        logger.warning("Invalid tgWebAppData")
-        abort(403)
-    user_id = init_data.split('&')[0].split('=')[1]
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT username, balance, level, status FROM users WHERE user_id = %s', (user_id,))
-        user = cursor.fetchone()
-        conn.close()
-        if user:
-            return render_template('profile.html', username=user[0], balance=format_amount(user[1]), level=user[2], status=user[3])
-        abort(404)
+        return render_template('index.html')
     except Exception as e:
-        logger.error(f"Profile page failed: {e}")
+        logger.error(f"Error rendering index.html: {e}")
         abort(500)
-@app.route('/slots')
-def slots_page():
-    init_data = request.args.get('tgWebAppData', '')
-    if not init_data or not validate_init_data(init_data, BOT_TOKEN):
-        logger.warning("Invalid tgWebAppData")
-        abort(403)
-    return render_template('slots.html')
-@app.route('/roulette')
-def roulette_page():
-    init_data = request.args.get('tgWebAppData', '')
-    if not init_data or not validate_init_data(init_data, BOT_TOKEN):
-        logger.warning("Invalid tgWebAppData")
-        abort(403)
-    return render_template('roulette.html')
-@app.route('/update_balance', methods=['POST'])
-def update_balance():
-    init_data = request.args.get('tgWebAppData', '')
-    if not init_data or not validate_init_data(init_data, BOT_TOKEN):
-        logger.warning("Invalid tgWebAppData")
-        abort(403)
-    user_id = init_data.split('&')[0].split('=')[1]
-    data = request.get_json()
-    amount = data.get('amount', 0)
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT balance FROM users WHERE user_id = %s', (user_id,))
-        user = cursor.fetchone()
-        if user:
-            new_balance = user[0] + amount
-            total_won = amount if amount > 0 else 0
-            total_lost = -amount if amount < 0 else 0
-            cursor.execute('''
-                UPDATE users SET balance=%s, total_won=total_won+%s, total_lost=total_lost+%s WHERE user_id=%s
-            ''', (new_balance, total_won, total_lost, user_id))
-            conn.commit()
-            conn.close()
-            return jsonify({'balance': format_amount(new_balance)})
-        conn.close()
-        abort(404)
-    except Exception as e:
-        logger.error(f"Update balance failed: {e}")
-        abort(500)
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        try:
-            update = telebot.types.Update.de_json(request.get_json())
-            bot.process_new_updates([update])
-            logger.info("Webhook processed successfully")
-            return '', 200
-        except Exception as e:
-            logger.error(f"Webhook processing failed: {e}")
-            return '', 500
-    logger.warning("Invalid webhook content-type")
-    return '', 403
+
+# Health check endpoint
+@app.route('/health')
+def health():
+    return 'OK', 200
+
+# Main entry point
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     logger.info(f"Starting application on port {port}")
-    bot.remove_webhook()
     try:
-        bot.set_webhook(url=f"https://casino-web.onrender.com/webhook")
-        logger.info("Webhook set successfully")
+        bot.remove_webhook()
+        webhook_url = "https://web-1ov4.onrender.com/webhook"
+        bot.set_webhook(url=webhook_url)
+        logger.info(f"Webhook set to {webhook_url}")
     except Exception as e:
         logger.error(f"Failed to set webhook: {e}")
     app.run(host="0.0.0.0", port=port)
